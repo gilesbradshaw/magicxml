@@ -1,4 +1,4 @@
-﻿/******************************************************************************
+/******************************************************************************
 Magic XML by Tom Davies
 -----------------------
 Magically implements cross-browser code from w3schools.com/xsl/xsl_client.asp 
@@ -54,6 +54,23 @@ THE SOFTWARE.
         return (candidate.indexOf('<?xml version="1.0"') >= 0);
     }
 
+    var parseXml;
+
+    if (window.DOMParser) {
+        parseXml = function(xmlStr) {
+            return ( new window.DOMParser() ).parseFromString(xmlStr, "text/xml");
+        };
+    } else if (typeof window.ActiveXObject != "undefined" && new window.ActiveXObject("Microsoft.XMLDOM")) {
+        parseXml = function(xmlStr) {
+            var xmlDoc = new window.ActiveXObject("Microsoft.XMLDOM");
+            xmlDoc.async = "false";
+            xmlDoc.loadXML(xmlStr);
+            return xmlDoc;
+        };
+    } else {
+        parseXml = function() { return null; }
+    }
+
     function loadXML(source) {
         var xhr = (window.ActiveXObject || "ActiveXObject" in window) ?
                 new ActiveXObject("Msxml2.XMLHTTP.3.0") :
@@ -61,7 +78,7 @@ THE SOFTWARE.
 
         xhr.open("GET", source, false);
         xhr.send();
-        return xhr.responseXML;
+        return xhr.responseXML || parseXml(xhr.responseText);
     }
     
     function parseXMLString(xmlString) {
